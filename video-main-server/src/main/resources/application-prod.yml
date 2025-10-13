@@ -1,0 +1,24 @@
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: mysql
+    port: 3306
+    database: sky_take_out
+    username: root
+    password: nhb2438012195
+
+minio:
+  endpoint: http://minio:9000
+  access-key: root
+  secret-key: nhb2438012195
+  bucket-name: sky
+
+redis:
+  host: redis
+  port: 6379
+  password: nhb2438012195
+wx:
+  appid: wxcc7aa83f143416c2
+  secret: 2dc427653a1536e4f71eadbf47104656
+  grant_type: authorization_code
+  url: https://api.weixin.qq.com/sns/jscode2session
