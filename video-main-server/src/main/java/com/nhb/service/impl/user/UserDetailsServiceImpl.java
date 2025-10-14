@@ -26,7 +26,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user == null) {
             return null;
         }
-
         return new UserDetailsImpl(user);
     }
 }
