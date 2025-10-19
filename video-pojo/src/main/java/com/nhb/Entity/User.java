@@ -1,12 +1,15 @@
 package com.nhb.Entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.baomidou.mybatisplus.annotation.*;
 @Slf4j
 @Data
@@ -32,6 +35,7 @@ public class User {
         private String avatar; // 头像 URL
 
         @TableField(value = "create_time", fill = FieldFill.INSERT)
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private LocalDateTime createTime; // 创建时间
 
         @TableField("state")
@@ -61,6 +65,22 @@ public class User {
         @TableField("vip")
         private Integer vip; // 会员：1=普通，2=大会员
 
+        public User (String username, String password) {
+                this.username = username;
+                this.password = password;
+                this.state = "1";
+                this.lv = 1;
+                this.experience = 0;
+                this.coin = 0;
+                this.phone = "";
+                this.vip = 1;
+                this.followQuantity = 0;
+                this.fansQuantity = 0;
+                this.dynamicQuantity = 0;
+                this.createTime = LocalDateTime.now();
+                this.name = "用户"+ UUID.randomUUID().toString().substring(0, 8);
+                log.info("用户注册成功！");
+        }
 
 }
 

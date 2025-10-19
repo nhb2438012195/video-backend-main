@@ -19,12 +19,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", username);
-        queryWrapper.ne("state", 2);
-        User user = userMapper.selectOne(queryWrapper);
-        if (user == null) {
+        User user = null;
+        try {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("username", username);
+            queryWrapper.ne("state", 2);
+            user = userMapper.selectOne(queryWrapper);
+        } catch (Exception e) {
+            log.error("数据库错误");
             return null;
+        }
+
+        if (user == null) {
+           throw new UsernameNotFoundException("用户不存在");
         }
         return new UserDetailsImpl(user);
     }

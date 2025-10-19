@@ -1,13 +1,18 @@
 package com.nhb.config;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,8 +26,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-
+@ConfigurationProperties(prefix = "security")
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -31,8 +38,12 @@ public class SecurityConfig {
     @Resource
     private UserDetailsService userDetailsService;
 
-//    @Autowired
-//    private JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
+    @Autowired
+   private JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
+
+    @Getter
+    private final List<String> permitUrls = new ArrayList<>();
+
 
     /**
      * 密码BCrypt加密
@@ -42,35 +53,21 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    /**
-     * 用户名和密码验证
-     * @return Authentication对象
-     */
+    //这是默认的认证管理器
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-        return new AuthenticationProvider() {
-            @Override
-            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                // 从Authentication对象中获取用户名和身份凭证信息
-                String username = authentication.getName();
-                String password = authentication.getCredentials().toString();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
 
-                UserDetails loginUser = userDetailsService.loadUserByUsername(username);
-                if (Objects.isNull(loginUser) || !passwordEncoder().matches(password, loginUser.getPassword())) {
-                    // 密码匹配失败抛出异常
-                    throw new BadCredentialsException("访问拒绝：用户名或密码错误！");
-                }
-
-//                log.info("访问成功：" + loginUser);
-                return new UsernamePasswordAuthenticationToken(loginUser, password, loginUser.getAuthorities());
-            }
-
-            @Override
-            public boolean supports(Class<?> authentication) {
-                return authentication.equals(UsernamePasswordAuthenticationToken.class);
-            }
-        };
+    // 显式注册你的 AuthenticationProvider
+    //这是默认的认证提供者
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     /**
@@ -89,36 +86,15 @@ public class SecurityConfig {
                 // 下面开始设置权限
                 .authorizeRequests(authorize -> authorize
                         // 请求放开接口
-                        .antMatchers("/druid/**","/favicon.ico",
-                                "/user/account/register",
-                                "/user/account/login",
-                                "/admin/account/login",
-                                "/category/getall",
-                                "/video/random/visitor",
-                                "/video/cumulative/visitor",
-                                "/video/getone",
-                                "/ws/danmu/**",
-                                "/danmu-list/**",
-                                "/msg/chat/outline",
-                                "/video/play/visitor",
-                                "/favorite/get-all/visitor",
-                                "/search/**",
-                                "/comment/get",
-                                "/comment/reply/get-more",
-                                "/comment/get-up-like",
-                                "/user/info/get-one",
-                                "/video/user-works-count",
-                                "/video/user-works",
-                                "/video/user-love",
-                                "/video/user-collect"
-                        ).permitAll()
+                        .antMatchers(permitUrls.toArray(new String[0])).permitAll()
                         // 允许HTTP OPTIONS请求
                         .antMatchers(HttpMethod.OPTIONS).permitAll()
                         // 其他地址的访问均需验证权限
                         .anyRequest().authenticated()
+
                 )
                 // 添加 JWT 过滤器，JWT 过滤器在用户名密码认证过滤器之前
-                //.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

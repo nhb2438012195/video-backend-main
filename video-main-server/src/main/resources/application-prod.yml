@@ -17,8 +17,3 @@ redis:
   host: redis
   port: 6379
   password: nhb2438012195
-wx:
-  appid: wxcc7aa83f143416c2
-  secret: 2dc427653a1536e4f71eadbf47104656
-  grant_type: authorization_code
-  url: https://api.weixin.qq.com/sns/jscode2session
