@@ -28,4 +28,10 @@ public class UserDAO extends ServiceImpl<UserMapper, User> {
                 .eq(User::getUsername, username)
                 .one();
     }
+
+    public User getUserById(Long id) {
+        return lambdaQuery()
+                .eq(User::getId, id)
+                .one();
+    }
 }
