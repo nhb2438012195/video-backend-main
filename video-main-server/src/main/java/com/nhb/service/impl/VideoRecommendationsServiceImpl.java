@@ -1,14 +1,13 @@
-package com.nhb.service.impl.video;
+package com.nhb.service.impl;
 
 import com.nhb.DAO.UserDAO;
 import com.nhb.DAO.VideoDetailsDAO;
 import com.nhb.Entity.VideoDetails;
 import com.nhb.VO.RandomVideoInfoVO;
-import com.nhb.service.video.VideoRecommendationsService;
+import com.nhb.service.VideoRecommendationsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

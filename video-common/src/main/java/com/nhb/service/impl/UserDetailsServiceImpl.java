@@ -1,4 +1,4 @@
-package com.nhb.service.impl.user;
+package com.nhb.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.nhb.Entity.User;

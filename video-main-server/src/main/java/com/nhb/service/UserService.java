@@ -1,10 +1,8 @@
-package com.nhb.service.user;
+package com.nhb.service;
 
 import com.nhb.DTO.UserLoginDTO;
 import com.nhb.DTO.UserRegisterDTO;
-import com.nhb.Entity.User;
 import com.nhb.VO.UserInfoVO;
-import com.nhb.VO.UserLoginVO;
 
 public interface UserService {
     String login(UserLoginDTO userLoginDTO);

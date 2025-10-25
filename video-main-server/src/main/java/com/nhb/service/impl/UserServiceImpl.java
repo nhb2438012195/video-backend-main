@@ -1,4 +1,4 @@
-package com.nhb.service.impl.user;
+package com.nhb.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nhb.BO.JWTclaims;
@@ -7,11 +7,10 @@ import com.nhb.DTO.UserLoginDTO;
 import com.nhb.DTO.UserRegisterDTO;
 import com.nhb.Entity.User;
 import com.nhb.VO.UserInfoVO;
-import com.nhb.VO.UserLoginVO;
 import com.nhb.exception.RegisterFailedException;
 import com.nhb.mapper.UserMapper;
 import com.nhb.properties.JwtProperties;
-import com.nhb.service.user.UserService;
+import com.nhb.service.UserService;
 import com.nhb.util.JwtUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

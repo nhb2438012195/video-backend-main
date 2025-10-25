@@ -2,7 +2,7 @@ package com.nhb.controller;
 
 import com.nhb.VO.RandomVideoInfoVO;
 import com.nhb.result.Result;
-import com.nhb.service.video.VideoRecommendationsService;
+import com.nhb.service.VideoRecommendationsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;

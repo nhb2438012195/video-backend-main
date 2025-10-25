@@ -1,4 +1,4 @@
-package com.nhb.service.impl.user;
+package com.nhb.service.impl;
 
 
 import com.nhb.Entity.User;

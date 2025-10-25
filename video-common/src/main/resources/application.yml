@@ -1,0 +1,94 @@
+spring:
+  profiles:
+    active: dev
+  main:
+    allow-circular-references: true
+  datasource:
+    druid:
+      driver-class-name: ${sky.datasource.driver-class-name}
+      url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      username: ${sky.datasource.username}
+      password: ${sky.datasource.password}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  redis:
+    host: ${redis.host}
+    port: ${redis.port}
+    password: ${redis.password}
+mybatis:
+  #mapper配置文件
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.nhb.Entity
+  configuration:
+    #开启驼峰命名
+    map-underscore-to-camel-case: true
+security:
+  permit-urls:
+    - "/favicon.ico"
+    - "/user/register"
+    - "/user/login"
+    - "/admin/account/login"
+    - "/user/info/get-one"
+    - "/category/getall"
+    - "/ws/danmu/**"
+    - "/danmu-list/**"
+    - "/msg/chat/outline"
+    - "/favorite/get-all/visitor"
+    - "/search/**"
+    - "/comment/get"
+    - "/comment/reply/get-more"
+    - "/comment/get-up-like"
+    - "/video/user-works-count"
+    - "/video/user-works"
+    - "/video/user-love"
+    - "/video/user-collect"
+    - "/video/random/visitor"
+    - "/video/cumulative/visitor"
+    - "/video/getone"
+    - "/video/play/visitor"
+    - "/doc.html"
+    - "/swagger-ui/**"
+    - "/v3/api-docs/**"
+    - "/webjars/**"
+#日志配置
+logging:
+  level:
+    com:
+      sky:
+        mapper: debug
+        service: info
+        controller: info
+sky:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    admin-secret-key: nhb2438012195
+    # 设置jwt过期时间
+    admin-ttl: 720000000
+    # 设置前端传递过来的令牌名称
+    admin-token-name: token
+    user-secret-key:  nhb2438012195
+    user-ttl: 720000000
+    user-token-name: token
+
+minio:
+  endpoint: ${minio.endpoint}
+  access-key: ${minio.access-key}
+  secret-key: ${minio.secret-key}
+  bucket-name: ${minio.bucket-name}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs       # json 地址
+  swagger-ui:
+    path: /swagger-ui.html   # 原生 swagger 地址
+  group-configs:
+    - group: default
+      packages-to-scan: com.nhb.controller   # 改成你的包
+      paths-to-match: /**
+
+knife4j:
+  enable: true               # 开启 knife4j 增强
+  setting:
+    language: zh_cn          # 中文界面

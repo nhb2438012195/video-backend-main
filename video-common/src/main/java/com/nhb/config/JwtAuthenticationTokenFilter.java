@@ -1,7 +1,6 @@
 package com.nhb.config;
 
 import com.nhb.properties.JwtProperties;
-import com.nhb.service.impl.user.UserDetailsImpl;
 import com.nhb.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;

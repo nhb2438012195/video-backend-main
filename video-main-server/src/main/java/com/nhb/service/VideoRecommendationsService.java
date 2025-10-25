@@ -1,4 +1,4 @@
-package com.nhb.service.video;
+package com.nhb.service;
 
 import com.nhb.VO.RandomVideoInfoVO;
 

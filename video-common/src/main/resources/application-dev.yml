@@ -1,0 +1,21 @@
+server:
+  port: 8081
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: videoweb
+    username: root
+    password: admin
+
+minio:
+  endpoint: http://43.139.233.219:9000
+  access-key: root
+  secret-key: nhb2438012195
+  bucket-name: sky
+
+redis:
+  host: 43.139.233.219
+  port: 6379
+  password: nhb2438012195

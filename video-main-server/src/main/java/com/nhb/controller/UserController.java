@@ -2,25 +2,18 @@ package com.nhb.controller;
 
 import com.nhb.DTO.UserLoginDTO;
 import com.nhb.DTO.UserRegisterDTO;
-import com.nhb.Entity.User;
 import com.nhb.VO.UserInfoVO;
 import com.nhb.VO.UserLoginVO;
 import com.nhb.result.Result;
-import com.nhb.service.user.UserService;
+import com.nhb.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/user")
