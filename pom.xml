@@ -18,7 +18,8 @@
         <module>video-pojo</module>
         <module>video-main-server</module>
         <module>video-common</module>
-        <module>video-play-server</module>
+        <module>video-video-server</module>
+        <module>video-videoTranscode-server</module>
     </modules>
     <properties>
         <java.version>8</java.version>
@@ -44,9 +45,22 @@
         <hutool>5.8.18</hutool>
         <minio>8.4.5</minio>
         <security>2.7.0</security>
+        <minio>8.4.5</minio>
+        <commons-lang3>3.12.0</commons-lang3>
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-security</artifactId>

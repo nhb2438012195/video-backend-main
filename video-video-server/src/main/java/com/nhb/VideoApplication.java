@@ -6,7 +6,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -17,10 +16,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableFeignClients  // 启用Feign客户端
 @EnableScheduling // 启用定时任务
 @EnableKnife4j// 启用Knife4j
-public class DemoApplication {
-
+public class VideoApplication {
     public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
+         SpringApplication.run(VideoApplication.class, args);
     }
-
 }

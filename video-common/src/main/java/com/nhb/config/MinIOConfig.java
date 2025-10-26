@@ -18,7 +18,7 @@ public class MinIOConfig {
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
-                .endpoint("http://minio:9000")
+                .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
     }

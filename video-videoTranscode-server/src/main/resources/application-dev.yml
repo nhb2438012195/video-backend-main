@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8083
 sky:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -10,12 +10,12 @@ sky:
     password: admin
 
 minio:
-  endpoint: http://43.139.233.219:9000
+  endpoint: http://120.26.137.2:9000
   access-key: root
   secret-key: nhb2438012195
-  bucket-name: sky
+  bucket-name: public
 
 redis:
-  host: 43.139.233.219
+  host: 120.26.137.2
   port: 6379
   password: nhb2438012195

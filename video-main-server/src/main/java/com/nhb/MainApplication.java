@@ -16,8 +16,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableFeignClients  // 启用Feign客户端
 @EnableScheduling // 启用定时任务
 @EnableKnife4j// 启用Knife4j
-public class Play {
+public class MainApplication {
+
     public static void main(String[] args) {
-         SpringApplication.run(Play.class, args);
+        SpringApplication.run(MainApplication.class, args);
     }
+
 }

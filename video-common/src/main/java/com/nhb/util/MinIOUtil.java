@@ -1,10 +1,12 @@
 package com.nhb.util;
 
 
+import cn.hutool.core.lang.UUID;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.http.Method;
 import io.minio.messages.Bucket;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -116,15 +118,20 @@ public class MinIOUtil {
      * @throws Exception 若上传失败
      */
     public String uploadFile(MultipartFile file) throws Exception {
+       return uploadFile(file,"");
+    }
+    public String uploadFile(MultipartFile file, String Name) throws Exception {
         String bucketName = defaultBucketName;
-
 
         // 获取原始文件名，若为空则使用默认名
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || originalFilename.trim().isEmpty()) {
-            originalFilename = "unnamed";
+            originalFilename = "unnamed"+ UUID.randomUUID();
         }
-
+        //如果fileName不为空，则使用fileName
+        if (!Name.isEmpty() && StringUtils.isNotBlank(Name)) {
+            originalFilename=Name;
+        }
         String baseName;
         String extension = "";
 
@@ -176,7 +183,6 @@ public class MinIOUtil {
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new Exception("加密签名异常: " + e.getMessage(), e);
         }
-
         return fileName; // 返回 MinIO 中存储的对象名称
     }
     /**
