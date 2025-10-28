@@ -1,9 +1,8 @@
 package com.nhb.service.messageConsumer;
 
 
-import com.nhb.Message.VideoTranscodeMessage;
+import com.nhb.message.VideoTranscodeMessage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 

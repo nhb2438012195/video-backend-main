@@ -1,7 +1,7 @@
 package com.nhb.DAO;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.nhb.Entity.User;
+import com.nhb.entity.User;
 import com.nhb.exception.RegisterFailedException;
 import com.nhb.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;

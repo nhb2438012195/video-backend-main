@@ -1,7 +1,7 @@
 package com.nhb.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.nhb.Entity.Video;
+import com.nhb.entity.Video;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

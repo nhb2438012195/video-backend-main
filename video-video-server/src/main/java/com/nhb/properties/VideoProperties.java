@@ -14,5 +14,11 @@ public class VideoProperties {
     private String Exchange;
     //发送消息的key
     private String RoutingKey;
+    //获取视频信息超时时间
+    private long timeout;
+    //最大分片大小
+    private long maxChunkSize;
+
+
 
 }

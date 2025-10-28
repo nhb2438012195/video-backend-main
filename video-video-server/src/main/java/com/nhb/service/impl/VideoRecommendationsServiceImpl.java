@@ -2,7 +2,7 @@ package com.nhb.service.impl;
 
 import com.nhb.DAO.UserDAO;
 import com.nhb.DAO.VideoDetailsDAO;
-import com.nhb.Entity.VideoDetails;
+import com.nhb.entity.VideoDetails;
 import com.nhb.VO.RandomVideoInfoVO;
 import com.nhb.service.VideoRecommendationsService;
 import org.springframework.beans.factory.annotation.Autowired;

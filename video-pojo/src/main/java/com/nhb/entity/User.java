@@ -1,4 +1,4 @@
-package com.nhb.Entity;
+package com.nhb.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;

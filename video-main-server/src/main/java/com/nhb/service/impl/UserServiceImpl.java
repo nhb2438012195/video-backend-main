@@ -5,7 +5,7 @@ import com.nhb.BO.JWTclaims;
 import com.nhb.DAO.UserDAO;
 import com.nhb.DTO.UserLoginDTO;
 import com.nhb.DTO.UserRegisterDTO;
-import com.nhb.Entity.User;
+import com.nhb.entity.User;
 import com.nhb.VO.UserInfoVO;
 import com.nhb.exception.RegisterFailedException;
 import com.nhb.mapper.UserMapper;

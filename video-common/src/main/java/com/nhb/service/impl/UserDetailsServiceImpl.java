@@ -1,7 +1,7 @@
 package com.nhb.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.nhb.Entity.User;
+import com.nhb.entity.User;
 import com.nhb.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

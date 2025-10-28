@@ -1,4 +1,4 @@
-package com.nhb.Message;
+package com.nhb.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
