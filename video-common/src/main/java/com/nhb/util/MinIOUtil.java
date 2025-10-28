@@ -123,14 +123,14 @@ public class MinIOUtil {
     public String uploadFile(MultipartFile file, String Name) throws Exception {
         String bucketName = defaultBucketName;
 
-        // 获取原始文件名，若为空则使用默认名
+        // 获取原始文件名，若为空则报错
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || originalFilename.trim().isEmpty()) {
-            originalFilename = "unnamed"+ UUID.randomUUID();
+            throw new Exception("上传文件失败：原始文件名为空，未知格式的文件");
         }
-        //如果fileName不为空，则使用fileName
+        //如果Name不为空，则拼接Name
         if (!Name.isEmpty() && StringUtils.isNotBlank(Name)) {
-            originalFilename=Name;
+            originalFilename=Name+originalFilename;
         }
         String baseName;
         String extension = "";

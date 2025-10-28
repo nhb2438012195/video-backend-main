@@ -1,5 +1,14 @@
+#项目配置
 server:
   port: ${server.port}
+
+video :
+  #视频存储桶
+  bucket: public
+  Exchange: video.exchange
+  RoutingKey: video.transcode
+
+#项目配置
 spring:
   profiles:
     active: dev

@@ -14,4 +14,17 @@ public class VideoDetailsDAO extends ServiceImpl<VideoDetailsMapper, VideoDetail
                 .last("ORDER BY RAND() LIMIT " + numInt)
                 .list();
     }
+
+    public VideoDetails addVideoDetails(VideoDetails videoDetails) {
+        boolean result = save(videoDetails);
+        if (result) {
+            return videoDetails;
+        } else {
+            throw new RuntimeException("视频详情创建失败");
+        }
+    }
+
+    public void updateVideoIdById(VideoDetails videoDetails) {
+        updateById(videoDetails);
+    }
 }

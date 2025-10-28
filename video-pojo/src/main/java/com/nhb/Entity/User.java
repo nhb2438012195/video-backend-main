@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.baomidou.mybatisplus.annotation.*;
 @Slf4j
 @Data
 @AllArgsConstructor
@@ -19,8 +18,8 @@ import com.baomidou.mybatisplus.annotation.*;
 @TableName("user") // 指定数据库表名（如果类名和表名一致，可省略）
 public class User {
 
-        @TableId(value = "id", type = IdType.AUTO) // 主键，自增
-        private Long id;
+        @TableId(value = "user_id", type = IdType.AUTO) // 主键，自增
+        private Long userId;
 
         @TableField(value = "username", condition = SqlCondition.EQUAL)
         private String username; // 用户名

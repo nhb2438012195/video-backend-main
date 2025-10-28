@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 
@@ -19,12 +16,15 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
-@TableName("Video_details") // 对应数据库表名
+
+@TableName("video_details") // 对应数据库表名
 public class VideoDetails {
 
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id; // 主键，自增
+    @TableId(value = "video_details_id", type = IdType.AUTO)
+    private Long videoDetailsId; // 主键，自增
+
+    @TableField("video_id")
+    private Long videoId;//视频ID
 
     @TableField("video_title")
     private String videoTitle; // 视频标题
@@ -36,7 +36,7 @@ public class VideoDetails {
     private Long videoAuthorId; // 视频作者ID
 
     @TableField("video_length")
-    private Double videoLength; // 视频时长（秒）
+    private String videoLength; // 视频时长（秒）
 
     @TableField("video_play_volume")
     private Integer videoPlayVolume; // 播放量
@@ -53,4 +53,9 @@ public class VideoDetails {
 
     @TableField("video_cover")
     private String videoCover;//视频封面
+
+    public VideoDetails(){
+        this.createTime=LocalDateTime.now();
+        this.state="1";
+    }
 }

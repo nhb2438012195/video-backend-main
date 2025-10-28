@@ -3,11 +3,11 @@ server:
 sky:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    host: localhost
+    host: 120.26.137.2
     port: 3306
     database: videoweb
     username: root
-    password: admin
+    password: nhb2438012195
 
 minio:
   endpoint: http://120.26.137.2:9000
@@ -19,8 +19,9 @@ redis:
   host: 120.26.137.2
   port: 6379
   password: nhb2438012195
+
 rabbitmq:
     host: 120.26.137.2
     port: 5672
-    username: guest
-    password: guest
+    username: root
+    password: nhb2438012195

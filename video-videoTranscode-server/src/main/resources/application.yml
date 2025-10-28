@@ -1,5 +1,11 @@
+#项目配置
 server:
   port: ${server.port}
+video:
+  transcode:
+    queue: video.transcode.queue
+
+#项目配置
 spring:
   profiles:
     active: dev
@@ -19,6 +25,12 @@ spring:
     host: ${redis.host}
     port: ${redis.port}
     password: ${redis.password}
+  rabbitmq:
+    host: ${rabbitmq.host}       # RabbitMQ 地址
+    port: ${rabbitmq.port}
+    username: ${rabbitmq.username}
+    password: ${rabbitmq.password}
+    virtual-host: /
 mybatis:
   #mapper配置文件
   mapper-locations: classpath:mapper/*.xml

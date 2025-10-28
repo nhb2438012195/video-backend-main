@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -57,25 +58,30 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                                         HttpServletResponse response,
                                         FilterChain chain) throws ServletException, IOException {
             // 获取请求路径
-            String requestURI = request.getRequestURI();
-            // ✅ 跳过不需要认证的路径
-            if (isPermitAll(requestURI)) {
-                chain.doFilter(request, response);
-                return;
-            }
-            String token = request.getHeader(jwtProperties.getUserTokenName());
-            if (!StringUtils.hasText(token)) {
-                chain.doFilter(request, response);
-                // 未登录
-                return;
-            }
-            Claims claims = jwtUtil.parseJWT(jwtProperties.getUserSecretKey(),token);
-            if (StringUtils.hasText(token) && Objects.nonNull(claims)) {
-                String username = claims.get("username").toString();
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            try {
+                String requestURI = request.getRequestURI();
+                // ✅ 跳过不需要认证的路径
+                if (isPermitAll(requestURI)) {
+                    chain.doFilter(request, response);
+                    return;
+                }
+                String token = request.getHeader(jwtProperties.getUserTokenName());
+                if (token.isEmpty()||!StringUtils.hasText(token) ) {
+                    chain.doFilter(request, response);
+                    // 未登录
+                    return;
+                }
+                Claims claims = jwtUtil.parseJWT(jwtProperties.getUserSecretKey(),token);
+                if (StringUtils.hasText(token) && Objects.nonNull(claims)) {
+                    String username = claims.get("username").toString();
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            } catch (Exception e) {
+                log.error("JWT 认证失败: {}", e.getMessage());
+                throw new RuntimeException(e);
             }
             chain.doFilter(request, response);
         }

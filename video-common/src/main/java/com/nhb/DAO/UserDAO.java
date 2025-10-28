@@ -31,7 +31,7 @@ public class UserDAO extends ServiceImpl<UserMapper, User> {
 
     public User getUserById(Long id) {
         return lambdaQuery()
-                .eq(User::getId, id)
+                .eq(User::getUserId, id)
                 .one();
     }
 }
