@@ -8,10 +8,10 @@ import com.nhb.VO.InitChunkUploadVO;
 import com.nhb.entity.Video;
 import com.nhb.entity.VideoDetails;
 import com.nhb.exception.BusinessException;
-import com.nhb.message.VideoTranscodeMessage;
+import com.nhb.command.VideoTranscodeCommand;
 import com.nhb.properties.VideoProperties;
 import com.nhb.service.VideoService;
-import com.nhb.session.ChunkUploadSession;
+import com.nhb.context.ChunkUploadContext;
 import com.nhb.util.MinIOUtil;
 import com.nhb.util.RabbitMQUtil;
 import com.nhb.util.RedisHashObjectUtils;
@@ -79,7 +79,7 @@ public class VideoServiceImpl implements VideoService {
         for (int i = 0; i < initChunkUploadDTO.getTotalChunks(); i++) {
             partETags.add("");
         }
-        ChunkUploadSession chunkUploadSession = ChunkUploadSession.builder()
+        ChunkUploadContext chunkUploadContext = ChunkUploadContext.builder()
                 .uploadId(uploadId)
                 .objectName(objectName)
                 .partETags(partETags)
@@ -91,7 +91,7 @@ public class VideoServiceImpl implements VideoService {
                 .isCanceled(false)
                 .uploadedChunkIndexes(new ArrayList<>())
                 .build();
-        redisHashObjectUtils.setObject(uploadKey, chunkUploadSession,videoProperties.getTimeout(), TimeUnit.MINUTES);
+        redisHashObjectUtils.setObject(uploadKey, chunkUploadContext,videoProperties.getTimeout(), TimeUnit.MINUTES);
         s3Util.initiateMultipartUpload(objectName);
         return InitChunkUploadVO.builder()
                 .uploadKey(uploadKey)
@@ -122,60 +122,61 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public ChunkUploadSession getChunkUploadSession(String uploadId, Integer chunkIndex, String username) {
-        ChunkUploadSession chunkUploadSession = redisHashObjectUtils.getObject(uploadId, ChunkUploadSession.class);
-        if(chunkUploadSession==null){
+    public ChunkUploadContext getChunkUploadSession(String uploadId, Integer chunkIndex, String username) {
+        ChunkUploadContext chunkUploadContext = redisHashObjectUtils.getObject(uploadId, ChunkUploadContext.class);
+        if(chunkUploadContext ==null){
             throw new BusinessException("上传视频失败:上传会话不存在");
         }
-        if(chunkUploadSession.isCanceled()){
+        if(chunkUploadContext.isCanceled()){
             throw new BusinessException("上传视频失败:上传已取消");
         }
-        if(chunkUploadSession.isPaused()){
+        if(chunkUploadContext.isPaused()){
             throw new BusinessException("上传视频失败:上传已暂停");
         }
-        if(chunkUploadSession.isUploaded()){
+        if(chunkUploadContext.isUploaded()){
             throw new BusinessException("上传视频失败:上传已完成");
         }
-        if(!username.equals(chunkUploadSession.getUserName())){
+        if(!username.equals(chunkUploadContext.getUserName())){
             throw new BusinessException("上传视频失败:用户名不匹配");
         }
-        if(chunkIndex>chunkUploadSession.getTotalChunks()){
+        if(chunkIndex> chunkUploadContext.getTotalChunks()){
             throw new BusinessException("上传视频失败:分片索引超出范围");
         }
-        if(chunkUploadSession.getUploadedChunkIndexes().contains(chunkIndex)){
+        if(chunkUploadContext.getUploadedChunkIndexes().contains(chunkIndex)){
             throw new BusinessException("上传视频失败:该分片已上传");
         }
-        return chunkUploadSession;
+        return chunkUploadContext;
     }
 
     @Override
-    public void uploadChunk(MultipartFile file, Integer chunkIndex, ChunkUploadSession chunkUploadSession) throws IOException {
-        String partETag = s3Util.uploadPart(chunkUploadSession.getUploadId(), chunkIndex, file, chunkUploadSession.getObjectName());
-        chunkUploadSession.getPartETags().set(chunkIndex-1, partETag);
-        chunkUploadSession.getUploadedChunkIndexes().add(chunkIndex);
-        chunkUploadSession.setUploadedChunkCount(chunkUploadSession.getUploadedChunkCount()+1);
+    public void uploadChunk(MultipartFile file, Integer chunkIndex, ChunkUploadContext chunkUploadContext) throws IOException {
+        String partETag = s3Util.uploadPart(chunkUploadContext.getUploadId(), chunkIndex, file, chunkUploadContext.getObjectName());
+        chunkUploadContext.getPartETags().set(chunkIndex-1, partETag);
+        chunkUploadContext.getUploadedChunkIndexes().add(chunkIndex);
+        chunkUploadContext.setUploadedChunkCount(chunkUploadContext.getUploadedChunkCount()+1);
     }
 
     @Override
-    public void mergeChunks(ChunkUploadSession chunkUploadSession) {
-        s3Util.completeMultipartUpload(chunkUploadSession.getUploadId(), chunkUploadSession.getPartETags(), chunkUploadSession.getObjectName());
-        Video   videoObject = createVideo();
-        VideoTranscodeMessage videoTranscodeMessage = VideoTranscodeMessage.builder()
+    public void mergeChunks(ChunkUploadContext chunkUploadContext, String uploadKey) {
+        //s3Util.completeMultipartUpload(chunkUploadSession.getUploadId(), chunkUploadSession.getPartETags(), chunkUploadSession.getObjectName());
+        Video videoObject = createVideo();
+        VideoTranscodeCommand videoTranscodeCommand = VideoTranscodeCommand.builder()
                 .videoId(String.valueOf(videoObject.getVideoId()))// 视频id,这里要写数据库里的id
-                .videoName(chunkUploadSession.getObjectName())
+                .videoName(chunkUploadContext.getObjectName())
                 .bucket(videoProperties.getBucket())
+                .uploadKey(uploadKey)
                 .build();
         rabbitMQUtil.sendJsonMessage(
                 videoProperties.getExchange(),  // 1. 发送到哪个 Exchange
                 videoProperties.getRoutingKey(),           // 2. 使用什么 Routing Key
-                videoTranscodeMessage                        // 3. 要发送的消息对象
+                videoTranscodeCommand                        // 3. 要发送的消息对象
         );
     }
 
     @Override
-    public void saveUploadSession(String uploadKey, ChunkUploadSession chunkUploadSession) {
-        redisHashObjectUtils.putField(uploadKey,"partETags",chunkUploadSession.getPartETags());
-        redisHashObjectUtils.putField(uploadKey,"uploadedChunkCount",chunkUploadSession.getUploadedChunkCount());
-        redisHashObjectUtils.putField(uploadKey,"uploadedChunkIndexes",chunkUploadSession.getUploadedChunkIndexes());
+    public void saveUploadSession(String uploadKey, ChunkUploadContext chunkUploadContext) {
+        redisHashObjectUtils.putField(uploadKey,"partETags", chunkUploadContext.getPartETags());
+        redisHashObjectUtils.putField(uploadKey,"uploadedChunkCount", chunkUploadContext.getUploadedChunkCount());
+        redisHashObjectUtils.putField(uploadKey,"uploadedChunkIndexes", chunkUploadContext.getUploadedChunkIndexes());
     }
 }

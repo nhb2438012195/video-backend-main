@@ -1,4 +1,4 @@
-package com.nhb.session;
+package com.nhb.context;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChunkUploadSession {
+public class ChunkUploadContext {
     //上传会话ID
     private String uploadId;
     //对象名

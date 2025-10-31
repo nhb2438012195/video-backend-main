@@ -1,4 +1,4 @@
-package com.nhb.message;
+package com.nhb.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VideoTranscodeMessage {
+public class VideoTranscodeCommand {
     // 视频在mysql数据库中的id，表名是video_play
     private String videoId;
     //视频在minio中的名字
     private String videoName;
     // 存储桶，默认是public
     private String bucket;
+    //上传会话的uploadKey
+    private String uploadKey;
 
 }

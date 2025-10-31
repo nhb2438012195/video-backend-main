@@ -39,6 +39,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private UserDAO userDAO;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Override
+    public void hello() {
+         System.out.println("hello world");
+    }
+
     @Override
     public String login(UserLoginDTO userLoginDTO) {
         // 进行认证

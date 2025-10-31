@@ -4,12 +4,14 @@ import com.nhb.DTO.InitChunkUploadDTO;
 import com.nhb.VO.InitChunkUploadVO;
 import com.nhb.entity.Video;
 import com.nhb.exception.BusinessException;
-import com.nhb.message.VideoTranscodeMessage;
+import com.nhb.command.VideoTranscodeCommand;
 import com.nhb.properties.VideoProperties;
 import com.nhb.result.Result;
 import com.nhb.service.CommonService;
+
+import com.nhb.service.UserService;
 import com.nhb.service.VideoService;
-import com.nhb.session.ChunkUploadSession;
+import com.nhb.context.ChunkUploadContext;
 import com.nhb.util.RabbitMQUtil;
 import com.nhb.util.RedisHashObjectUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +42,8 @@ public class VideoController {
 
     @Autowired
     private CommonService commonService;
+    @Autowired
+    private UserService userService;
     @Operation(summary = "上传视频")
     @PostMapping("/upload")
     public Result upload(@RequestParam("video") MultipartFile video) throws Exception {
@@ -51,22 +55,23 @@ public class VideoController {
         String    name = videoService.upload(video);
             // 创建视频对象
         Video    videoObject = videoService.createVideo();
-        VideoTranscodeMessage videoTranscodeMessage = VideoTranscodeMessage.builder()
+        VideoTranscodeCommand videoTranscodeCommand = VideoTranscodeCommand.builder()
                 .videoId(String.valueOf(videoObject.getVideoId()))// 视频id,这里要写数据库里的id
                 .videoName(name)
                 .bucket(videoProperties.getBucket())
                 .build();
-        log.info("发送视频转码消息:{}", videoTranscodeMessage);
+        log.info("发送视频转码消息:{}", videoTranscodeCommand);
         rabbitMQUtil.sendJsonMessage(
                 videoProperties.getExchange(),  // 1. 发送到哪个 Exchange
                 videoProperties.getRoutingKey(),           // 2. 使用什么 Routing Key
-                videoTranscodeMessage                        // 3. 要发送的消息对象
+                videoTranscodeCommand                        // 3. 要发送的消息对象
         );
         return Result.success("上传成功"+ name);
     }
     @Operation(summary = "初始化分片上传视频")
     @PostMapping("/initChunkUpload")
     public Result initChunkUpload(@RequestBody InitChunkUploadDTO initChunkUploadDTO) {
+        userService.hello();
         //校验用户名
         log.info("开始初始化分片上传");
         String username = commonService.checkUserName();
@@ -90,20 +95,22 @@ public class VideoController {
             throw new BusinessException("上传分片视频失败:分片文件不合法");
         }
         //获取上传会话
-        ChunkUploadSession chunkUploadSession = videoService.getChunkUploadSession(uploadKey,chunkIndex, username);
-        log.info("获取上传会话成功:{}", chunkUploadSession);
+        ChunkUploadContext chunkUploadContext = videoService.getChunkUploadSession(uploadKey,chunkIndex, username);
+        log.info("获取上传会话成功:{}", chunkUploadContext);
         //上传分片视频
-        videoService.uploadChunk(file, chunkIndex, chunkUploadSession);
+        videoService.uploadChunk(file, chunkIndex, chunkUploadContext);
         log.info("上传分片成功");
-        if(chunkUploadSession.getUploadedChunkCount().equals(chunkUploadSession.getTotalChunks())){
+        if(chunkUploadContext.getUploadedChunkCount().equals(chunkUploadContext.getTotalChunks())){
             log.info("所有分片上传成功,进行分片合并");
             //合并分片
-            videoService.mergeChunks(chunkUploadSession);
+            videoService.mergeChunks(chunkUploadContext,uploadKey);
             log.info("分片合并成功");
+            //保存上传会话
+            videoService.saveUploadSession(uploadKey, chunkUploadContext);
             return Result.success("已完成上传，分片合并成功");
         }
         //保存上传会话
-        videoService.saveUploadSession(uploadKey, chunkUploadSession);
+        videoService.saveUploadSession(uploadKey, chunkUploadContext);
         return Result.success("上传分片成功");
     }
 }

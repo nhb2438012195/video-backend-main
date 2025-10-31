@@ -5,6 +5,8 @@ import com.nhb.DTO.UserRegisterDTO;
 import com.nhb.VO.UserInfoVO;
 
 public interface UserService {
+     void hello();
+
     String login(UserLoginDTO userLoginDTO);
 
     void register(UserRegisterDTO userRegisterDTO);

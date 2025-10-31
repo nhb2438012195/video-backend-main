@@ -25,6 +25,51 @@ public class S3Util {
     @Qualifier("defaultBucketName")
     private String defaultBucketName;
 
+    /**
+     * 清除指定存储桶中所有未完成的分片上传任务（multipart uploads）
+     *
+     * @param bucketName 存储桶名称，若为 null 或 blank，则使用默认 bucket
+     */
+    public void clearAllIncompleteMultipartUploads(String bucketName) {
+        String targetBucket = (bucketName == null || bucketName.trim().isEmpty()) ? defaultBucketName : bucketName;
+
+        log.info("开始清理存储桶 [{}] 中所有未完成的分片上传任务...", targetBucket);
+
+        try {
+            ListMultipartUploadsRequest request = ListMultipartUploadsRequest.builder()
+                    .bucket(targetBucket)
+                    .build();
+
+            ListMultipartUploadsResponse response = s3Client.listMultipartUploads(request);
+            List<MultipartUpload> uploads = response.uploads();
+
+            if (uploads.isEmpty()) {
+                log.info("存储桶 [{}] 中没有未完成的分片上传任务。", targetBucket);
+                return;
+            }
+
+            log.info("发现 {} 个未完成的分片上传任务，开始中止...", uploads.size());
+
+            for (MultipartUpload upload : uploads) {
+                try {
+                    AbortMultipartUploadRequest abortRequest = AbortMultipartUploadRequest.builder()
+                            .bucket(targetBucket)
+                            .key(upload.key())
+                            .uploadId(upload.uploadId())
+                            .build();
+
+                    s3Client.abortMultipartUpload(abortRequest);
+                    log.info("已中止分片上传任务: key={}, uploadId={}", upload.key(), upload.uploadId());
+                } catch (Exception e) {
+                    log.error("中止分片上传任务失败: key={}, uploadId={}", upload.key(), upload.uploadId(), e);
+                }
+            }
+
+            log.info("存储桶 [{}] 的未完成分片上传任务清理完成。", targetBucket);
+        } catch (Exception e) {
+            log.error("清理存储桶 [{}] 的未完成分片上传任务时发生异常", targetBucket, e);
+        }
+    }
 
     /**
      * 初始化分片上传
