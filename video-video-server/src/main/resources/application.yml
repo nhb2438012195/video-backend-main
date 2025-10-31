@@ -61,6 +61,7 @@ security:
     - "/comment/get"
     - "/comment/reply/get-more"
     - "/comment/get-up-like"
+    - "/video/recommendedVideoInfo"
     - "/video/user-works-count"
     - "/video/user-works"
     - "/video/user-love"

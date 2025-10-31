@@ -33,7 +33,6 @@ public class S3Util {
      * @return 分片上传 ID
      */
     public String  initiateMultipartUpload(String objectName) {
-        try {
             CreateMultipartUploadRequest request = CreateMultipartUploadRequest.builder()
                     .bucket(defaultBucketName)
                     .key(objectName)
@@ -42,10 +41,6 @@ public class S3Util {
             String uploadId = response.uploadId();
             log.info("初始化分片上传成功，uploadId: {}, objectName: {}", uploadId, objectName);
             return uploadId;
-        } catch (Exception e) {
-            log.error("初始化分片上传失败，objectName: {}", objectName, e);
-            throw new RuntimeException("初始化分片上传失败", e);
-        }
     }
 
     /**
@@ -56,8 +51,7 @@ public class S3Util {
      * @param file        分片文件（MultipartFile）
      * @return ETag（用于后续合并）
      */
-    public String uploadPart(String uploadId, int partNumber, MultipartFile file,String objectName) {
-        try {
+    public String uploadPart(String uploadId, int partNumber, MultipartFile file,String objectName) throws IOException {
             if (objectName == null) {
                 throw new IllegalArgumentException("无效的 uploadId: " + uploadId);
             }
@@ -81,13 +75,6 @@ public class S3Util {
             String eTag = response.eTag();
             log.debug("上传分片成功，uploadId: {}, part: {}, ETag: {}", uploadId, partNumber, eTag);
             return eTag;
-        } catch (IOException e) {
-            log.error("读取分片文件失败，uploadId: {}, part: {}", uploadId, partNumber, e);
-            throw new RuntimeException("读取分片文件失败", e);
-        } catch (Exception e) {
-            log.error("上传分片失败，uploadId: {}, part: {}", uploadId, partNumber, e);
-            throw new RuntimeException("上传分片失败", e);
-        }
     }
     /**
      * 完成分片上传（合并所有分片）
@@ -96,7 +83,6 @@ public class S3Util {
      * @param partETags 按 partNumber 顺序排列的 ETag 列表（索引 0 对应 part 1）
      */
     public void completeMultipartUpload(String uploadId, List<String> partETags,String objectName) {
-        try {
             if (objectName == null) {
                 throw new IllegalArgumentException("无效的 uploadId: " + uploadId);
             }
@@ -121,19 +107,13 @@ public class S3Util {
                     .build();
 
             s3Client.completeMultipartUpload(request);
-            uploadIdToFile.remove(uploadId); // 清理缓存
             log.info("完成分片上传，uploadId: {}, objectName: {}", uploadId, objectName);
-        } catch (Exception e) {
-            log.error("完成分片上传失败，uploadId: {}", uploadId, e);
-            throw new RuntimeException("完成分片上传失败", e);
-        }
     }
 
     /**
      * 取消分片上传（清理未完成的分片）
      */
     public void abortMultipartUpload(String uploadId,String objectName) {
-        try {
             if (objectName == null) return;
             AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder()
                     .bucket(defaultBucketName)
@@ -141,11 +121,7 @@ public class S3Util {
                     .uploadId(uploadId)
                     .build();
             s3Client.abortMultipartUpload(request);
-            uploadIdToFile.remove(uploadId);
             log.info("已取消分片上传，uploadId: {}", uploadId);
-        } catch (Exception e) {
-            log.warn("取消分片上传时出错，uploadId: {}", uploadId, e);
-        }
     }
 
     // ==================== 其他常用方法（可选）====================

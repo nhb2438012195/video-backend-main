@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InitChunkUploadDTO {
     private Integer totalChunks;
+    private String fileType;
 }

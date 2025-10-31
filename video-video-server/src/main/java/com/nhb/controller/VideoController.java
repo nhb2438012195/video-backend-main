@@ -16,11 +16,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/video")
@@ -48,12 +47,10 @@ public class VideoController {
         if (video.isEmpty()) {
             throw new BusinessException("上传视频失败:上传文件不能为空");
         }
-        Video videoObject = null;
-        String name = null;
             // 上传视频
-             name = videoService.upload(video);
+        String    name = videoService.upload(video);
             // 创建视频对象
-            videoObject = videoService.createVideo();
+        Video    videoObject = videoService.createVideo();
         VideoTranscodeMessage videoTranscodeMessage = VideoTranscodeMessage.builder()
                 .videoId(String.valueOf(videoObject.getVideoId()))// 视频id,这里要写数据库里的id
                 .videoName(name)
@@ -69,20 +66,19 @@ public class VideoController {
     }
     @Operation(summary = "初始化分片上传视频")
     @PostMapping("/initChunkUpload")
-    public Result initChunkUpload(InitChunkUploadDTO initChunkUploadDTO) {
+    public Result initChunkUpload(@RequestBody InitChunkUploadDTO initChunkUploadDTO) {
         //校验用户名
         log.info("开始初始化分片上传");
         String username = commonService.checkUserName();
-        InitChunkUploadVO initChunkUploadVO = null;
-        initChunkUploadVO = videoService.initChunkUpload(initChunkUploadDTO, username);
+        InitChunkUploadVO initChunkUploadVO = videoService.initChunkUpload(initChunkUploadDTO, username);
         log.info("初始化分片上传成功:{}", initChunkUploadVO);
         return Result.success(initChunkUploadVO);
     }
     @Operation(summary = "上传分片视频")
     @PostMapping("/chunkUpload")
-    public Result chunkUpload(@RequestParam("file") MultipartFile file,
+    public Result chunkUpload(@RequestParam("chunk") MultipartFile file,
                              @RequestParam("uploadKey") String uploadKey,
-                             @RequestParam("chunkIndex") Integer chunkIndex) {
+                             @RequestParam("partNumber") Integer chunkIndex) throws IOException {
         log.info("开始上传分片视频:{}", chunkIndex);
         String username = commonService.checkUserName();
         //检查是否有权限上传
@@ -94,12 +90,20 @@ public class VideoController {
             throw new BusinessException("上传分片视频失败:分片文件不合法");
         }
         //获取上传会话
-        ChunkUploadSession chunkUploadSession = null;
-        chunkUploadSession = videoService.getChunkUploadSession(uploadKey,chunkIndex, username);
+        ChunkUploadSession chunkUploadSession = videoService.getChunkUploadSession(uploadKey,chunkIndex, username);
         log.info("获取上传会话成功:{}", chunkUploadSession);
         //上传分片视频
         videoService.uploadChunk(file, chunkIndex, chunkUploadSession);
         log.info("上传分片成功");
+        if(chunkUploadSession.getUploadedChunkCount().equals(chunkUploadSession.getTotalChunks())){
+            log.info("所有分片上传成功,进行分片合并");
+            //合并分片
+            videoService.mergeChunks(chunkUploadSession);
+            log.info("分片合并成功");
+            return Result.success("已完成上传，分片合并成功");
+        }
+        //保存上传会话
+        videoService.saveUploadSession(uploadKey, chunkUploadSession);
         return Result.success("上传分片成功");
     }
 }

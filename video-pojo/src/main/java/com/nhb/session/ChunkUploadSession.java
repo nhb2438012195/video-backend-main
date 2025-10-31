@@ -18,6 +18,8 @@ public class ChunkUploadSession {
     private String uploadId;
     //对象名
     private String objectName;
+    //分片上传的ETags
+    private List<String> partETags;
     // 用户名
     private String userName;
     //总分片数

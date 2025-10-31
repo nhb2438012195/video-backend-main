@@ -6,6 +6,8 @@ import com.nhb.entity.Video;
 import com.nhb.session.ChunkUploadSession;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 public interface VideoService {
     String upload(MultipartFile video) throws Exception;
 
@@ -20,5 +22,9 @@ public interface VideoService {
 
     ChunkUploadSession getChunkUploadSession(String uploadId, Integer chunkIndex, String username);
 
-    void uploadChunk(MultipartFile file, Integer chunkIndex, ChunkUploadSession chunkUploadSession);
+    void uploadChunk(MultipartFile file, Integer chunkIndex, ChunkUploadSession chunkUploadSession) throws IOException;
+
+    void mergeChunks(ChunkUploadSession chunkUploadSession);
+
+    void saveUploadSession(String uploadKey, ChunkUploadSession chunkUploadSession);
 }
