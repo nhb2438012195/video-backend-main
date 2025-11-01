@@ -13,7 +13,7 @@ minio:
   endpoint: http://120.26.137.2:9000
   access-key: root
   secret-key: nhb2438012195
-  bucket-name: sky
+  bucket-name: public
 
 redis:
   host: 120.26.137.2

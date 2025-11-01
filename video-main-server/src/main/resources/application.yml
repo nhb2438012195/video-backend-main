@@ -9,7 +9,7 @@ video :
   #  缓存超时时间，单位分钟
   timeout: 120
   #  最大分片大小10MB
-  maxChunkSize : 10485760
+  maxChunkSize : 11485760
   transcode:
     queue: video.transcode.queue
 #项目配置
@@ -28,8 +28,8 @@ spring:
       password: ${sky.datasource.password}
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 11MB
+      max-request-size: 11MB
   redis:
     host: ${redis.host}
     port: ${redis.port}
@@ -84,8 +84,7 @@ logging:
         mapper: debug
         service: info
         controller: info
-sky:
-  jwt:
+jwt:
     # 设置jwt签名加密时使用的秘钥
     admin-secret-key: nhb2438012195
     # 设置jwt过期时间
