@@ -69,8 +69,11 @@ public class VideoServiceImpl implements VideoService {
 
     @Override
     public InitChunkUploadVO initChunkUpload(InitChunkUploadDTO initChunkUploadDTO, String username) {
-        if(Objects.isNull(initChunkUploadDTO) || Objects.isNull(initChunkUploadDTO.getTotalChunks()) || initChunkUploadDTO.getTotalChunks()<=0){
-            throw new BusinessException("TotalChunks参数错误:不能为null或者小于0");
+        if(Objects.isNull(initChunkUploadDTO.getTotalChunks()) ||
+                initChunkUploadDTO.getTotalChunks()<=0 ||
+                initChunkUploadDTO.getTotalChunks()>1000
+        ){
+            throw new BusinessException("TotalChunks参数错误:不能为null或者小于0大于1000");
         }
         String objectName=UUID.randomUUID()+"."+initChunkUploadDTO.getFileType().split("/")[1];
         String uploadKey = "chunkUpload."+username+"."+objectName;
@@ -84,7 +87,6 @@ public class VideoServiceImpl implements VideoService {
                 .objectName(objectName)
                 .partETags(partETags)
                 .totalChunks(initChunkUploadDTO.getTotalChunks())
-                .userName(username)
                 .uploadedChunkCount(0)
                 .isPaused(false)
                 .build();

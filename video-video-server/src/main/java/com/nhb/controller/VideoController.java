@@ -74,7 +74,7 @@ public class VideoController {
         userService.hello();
         //校验用户名
         log.info("开始初始化分片上传");
-        String username = commonService.checkUserName();
+        String username = commonService.getUserName();
         InitChunkUploadVO initChunkUploadVO = videoService.initChunkUpload(initChunkUploadDTO, username);
         log.info("初始化分片上传成功:{}", initChunkUploadVO);
         return Result.success(initChunkUploadVO);
@@ -85,7 +85,7 @@ public class VideoController {
                              @RequestParam("uploadKey") String uploadKey,
                              @RequestParam("partNumber") Integer chunkIndex) throws IOException {
         log.info("开始上传分片视频:{}", chunkIndex);
-        String username = commonService.checkUserName();
+        String username = commonService.getUserName();
         //检查是否有权限上传
         if(!videoService.checkChunkUploadPermission(username, uploadKey,chunkIndex)){
             throw new BusinessException("上传分片视频失败:无权限上传");
@@ -100,17 +100,15 @@ public class VideoController {
         //上传分片视频
         videoService.uploadChunk(file, chunkIndex, chunkUploadContext);
         log.info("上传分片成功");
+        //保存上传会话
+        videoService.saveUploadSession(uploadKey, chunkUploadContext);
         if(chunkUploadContext.getUploadedChunkCount().equals(chunkUploadContext.getTotalChunks())){
             log.info("所有分片上传成功,进行分片合并");
             //合并分片
             videoService.mergeChunks(chunkUploadContext,uploadKey);
             log.info("分片合并成功");
-            //保存上传会话
-            videoService.saveUploadSession(uploadKey, chunkUploadContext);
             return Result.success("已完成上传，分片合并成功");
         }
-        //保存上传会话
-        videoService.saveUploadSession(uploadKey, chunkUploadContext);
         return Result.success("上传分片成功");
     }
 }

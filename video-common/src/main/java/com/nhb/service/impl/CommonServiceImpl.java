@@ -18,4 +18,9 @@ public class CommonServiceImpl implements CommonService {
         }
         return username;
     }
+
+    @Override
+    public String getUserName() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
 }

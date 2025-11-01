@@ -20,8 +20,6 @@ public class ChunkUploadContext {
     private String objectName;
     //分片上传的ETags
     private List<String> partETags;
-    // 用户名
-    private String userName;
     //总分片数
     private Integer totalChunks;
     //已上传分片数
