@@ -19,7 +19,6 @@
         <module>video-main-server</module>
         <module>video-common</module>
         <module>video-video-server</module>
-        <module>video-videoTranscode-server</module>
     </modules>
     <properties>
         <java.version>8</java.version>

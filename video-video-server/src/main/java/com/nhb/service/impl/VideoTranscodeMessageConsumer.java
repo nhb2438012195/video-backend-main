@@ -1,4 +1,4 @@
-package com.nhb.service.messageConsumer;
+package com.nhb.service.impl;
 
 
 import com.nhb.command.VideoTranscodeCommand;
