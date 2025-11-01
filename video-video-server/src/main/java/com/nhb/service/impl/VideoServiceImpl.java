@@ -42,30 +42,9 @@ public class VideoServiceImpl implements VideoService {
     private S3Util s3Util;
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
-    @Override
-    public String upload(MultipartFile video) throws Exception {
-        return minIOUtil.uploadFile(video, "video"+ UUID.randomUUID());
-    }
 
-    @Override
-    public Video createVideo() {
-        VideoDetails videoDetails = videoDetailsDAO.addVideoDetails(new VideoDetails());
 
-       Video video = videoDAO.addVideo(Video.builder()
-                .videoId(null)
-                .detailsId(videoDetails.getVideoDetailsId())
-                .videoMpdUrl(null)
-                .isReady(0)
-                .build()
-       );
-       if(video.getVideoId()==null){
-           throw new BusinessException("视频创建失败");
-       }
-       // 更新视频详情表中的视频ID
-        videoDetails.setVideoId(video.getVideoId());
-        videoDetailsDAO.updateVideoIdById(videoDetails);
-       return video;
-    }
+
 
     @Override
     public InitChunkUploadVO initChunkUpload(InitChunkUploadDTO initChunkUploadDTO, String username) {
@@ -139,9 +118,7 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public void mergeChunks(ChunkUploadContext chunkUploadContext, String uploadKey) {
         //s3Util.completeMultipartUpload(chunkUploadSession.getUploadId(), chunkUploadSession.getPartETags(), chunkUploadSession.getObjectName());
-        Video videoObject = createVideo();
         VideoTranscodeCommand videoTranscodeCommand = VideoTranscodeCommand.builder()
-                .videoId(String.valueOf(videoObject.getVideoId()))// 视频id,这里要写数据库里的id
                 .videoName(chunkUploadContext.getObjectName())
                 .bucket(videoProperties.getBucket())
                 .uploadKey(uploadKey)

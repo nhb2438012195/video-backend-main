@@ -12,8 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VideoTranscodeCommand {
-    // 视频在mysql数据库中的id，表名是video_play
-    private String videoId;
+
     //视频在minio中的名字
     private String videoName;
     // 存储桶，默认是public

@@ -1,8 +1,13 @@
-package com.nhb.service.impl;
+package com.nhb.service.consumer;
 
 
+import com.nhb.DAO.VideoDAO;
+import com.nhb.DAO.VideoDetailsDAO;
 import com.nhb.command.VideoTranscodeCommand;
 import com.nhb.context.ChunkUploadContext;
+import com.nhb.entity.Video;
+import com.nhb.entity.VideoDetails;
+import com.nhb.exception.BusinessException;
 import com.nhb.util.RabbitMQUtil;
 import com.nhb.util.RedisHashObjectUtils;
 import com.nhb.util.S3Util;
@@ -22,6 +27,10 @@ public class VideoTranscodeMessageConsumer {
     private RabbitMQUtil rabbitMQUtil;
     @Autowired
     private RedisHashObjectUtils redisHashObjectUtils;
+    @Autowired
+    private VideoDAO videoDAO;
+    @Autowired
+    private VideoDetailsDAO videoDetailsDAO;
     @RabbitListener(queues = "${video.transcode.queue}")
     public void transcode(VideoTranscodeCommand message) {
 
@@ -32,5 +41,24 @@ public class VideoTranscodeMessageConsumer {
         s3Util.completeMultipartUpload(chunkUploadContext.getUploadId(), chunkUploadContext.getPartETags(), chunkUploadContext.getObjectName());
         log.info("合并分片完成：{}", message.getUploadKey());
         log.info("开始转码：{}", message.getVideoName());
+        Video videoObject = createVideo();
+    }
+
+    public Video createVideo() {
+        VideoDetails videoDetails = videoDetailsDAO.addVideoDetails(new VideoDetails());
+        Video video = videoDAO.addVideo(Video.builder()
+                .videoId(null)
+                .detailsId(videoDetails.getVideoDetailsId())
+                .videoMpdUrl(null)
+                .isReady(0)
+                .build()
+        );
+        if(video.getVideoId()==null){
+            throw new BusinessException("视频创建失败");
+        }
+        // 更新视频详情表中的视频ID
+        videoDetails.setVideoId(video.getVideoId());
+        videoDetailsDAO.updateVideoIdById(videoDetails);
+        return video;
     }
 }

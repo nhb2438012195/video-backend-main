@@ -9,9 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface VideoService {
-    String upload(MultipartFile video) throws Exception;
 
-    Video createVideo();
 
 
     InitChunkUploadVO initChunkUpload(InitChunkUploadDTO initChunkUploadDTO, String username);

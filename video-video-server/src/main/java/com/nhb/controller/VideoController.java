@@ -44,30 +44,29 @@ public class VideoController {
     private CommonService commonService;
     @Autowired
     private UserService userService;
-    @Operation(summary = "上传视频")
-    @PostMapping("/upload")
-    public Result upload(@RequestParam("video") MultipartFile video) throws Exception {
-        log.info("开始上传视频");
-        if (video.isEmpty()) {
-            throw new BusinessException("上传视频失败:上传文件不能为空");
-        }
-            // 上传视频
-        String    name = videoService.upload(video);
-            // 创建视频对象
-        Video    videoObject = videoService.createVideo();
-        VideoTranscodeCommand videoTranscodeCommand = VideoTranscodeCommand.builder()
-                .videoId(String.valueOf(videoObject.getVideoId()))// 视频id,这里要写数据库里的id
-                .videoName(name)
-                .bucket(videoProperties.getBucket())
-                .build();
-        log.info("发送视频转码消息:{}", videoTranscodeCommand);
-        rabbitMQUtil.sendJsonMessage(
-                videoProperties.getExchange(),  // 1. 发送到哪个 Exchange
-                videoProperties.getRoutingKey(),           // 2. 使用什么 Routing Key
-                videoTranscodeCommand                        // 3. 要发送的消息对象
-        );
-        return Result.success("上传成功"+ name);
-    }
+//    @Operation(summary = "上传视频")
+//    @PostMapping("/upload")
+//    public Result upload(@RequestParam("video") MultipartFile video) throws Exception {
+//        log.info("开始上传视频");
+//        if (video.isEmpty()) {
+//            throw new BusinessException("上传视频失败:上传文件不能为空");
+//        }
+//            // 上传视频
+//        String    name = videoService.upload(video);
+//            // 创建视频对象
+//        Video    videoObject = videoService.createVideo();
+//        VideoTranscodeCommand videoTranscodeCommand = VideoTranscodeCommand.builder()
+//                .videoName(name)
+//                .bucket(videoProperties.getBucket())
+//                .build();
+//        log.info("发送视频转码消息:{}", videoTranscodeCommand);
+//        rabbitMQUtil.sendJsonMessage(
+//                videoProperties.getExchange(),  // 1. 发送到哪个 Exchange
+//                videoProperties.getRoutingKey(),           // 2. 使用什么 Routing Key
+//                videoTranscodeCommand                        // 3. 要发送的消息对象
+//        );
+//        return Result.success("上传成功"+ name);
+//    }
     @Operation(summary = "初始化分片上传视频")
     @PostMapping("/initChunkUpload")
     public Result initChunkUpload(@RequestBody InitChunkUploadDTO initChunkUploadDTO) {
