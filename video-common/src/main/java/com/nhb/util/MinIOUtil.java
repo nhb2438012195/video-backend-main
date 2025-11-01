@@ -12,6 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -87,7 +91,30 @@ public class MinIOUtil {
                         .build()
         );
     }
+    /**
+     * 从 MinIO 下载文件并保存到本地指定路径
+     *
+     * @param fileName     MinIO 中的对象名（如 "videos/123.mp4"）
+     * @param localPath    本地保存的完整路径（如 "E:/videoMp4/input.mp4"）
+     * @throws Exception
+     */
+    public void downloadFileToLocal(String fileName, String localPath) throws Exception {
+        try (InputStream inputStream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(defaultBucketName)
+                        .object(fileName)
+                        .build())) {
 
+            Path targetPath = Paths.get(localPath);
+            // 自动创建父目录（如 E:/videoMp4/ 不存在会自动创建）
+            Files.createDirectories(targetPath.getParent());
+
+            // 将输入流复制到目标文件
+            Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            log.info("✅ 文件已下载到: {}", localPath);
+        }
+    }
     /**
      * 删除文件
      */

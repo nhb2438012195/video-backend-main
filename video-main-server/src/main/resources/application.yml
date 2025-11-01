@@ -12,6 +12,10 @@ video :
   maxChunkSize : 11485760
   transcode:
     queue: video.transcode.queue
+  #下载MP4文件临时文件目录
+  Mp4FilePath: E:/videoMp4/
+  #保存DASH文件的目录
+  DashFilePath: E:/videoDash/
 #项目配置
 
 

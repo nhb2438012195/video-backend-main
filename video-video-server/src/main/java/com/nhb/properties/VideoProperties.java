@@ -19,6 +19,10 @@ public class VideoProperties {
     //最大分片大小
     private long maxChunkSize;
 
+    private String Mp4FilePath;
+
+    private String DashFilePath;
+
 
 
 }

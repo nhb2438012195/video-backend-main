@@ -8,14 +8,15 @@ import com.nhb.context.ChunkUploadContext;
 import com.nhb.entity.Video;
 import com.nhb.entity.VideoDetails;
 import com.nhb.exception.BusinessException;
-import com.nhb.util.RabbitMQUtil;
-import com.nhb.util.RedisHashObjectUtils;
-import com.nhb.util.S3Util;
+import com.nhb.properties.VideoProperties;
+import com.nhb.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 @Slf4j
@@ -31,17 +32,33 @@ public class VideoTranscodeMessageConsumer {
     private VideoDAO videoDAO;
     @Autowired
     private VideoDetailsDAO videoDetailsDAO;
+    @Autowired
+    private MinIOUtil minIOUtil;
+    @Autowired
+    private VideoProperties videoProperties;
+    @Autowired
+    private FFmpegUtils ffmpegUtils;
+
     @RabbitListener(queues = "${video.transcode.queue}")
     public void transcode(VideoTranscodeCommand message) {
 
-        System.out.println("接收到视频转码消息：" + message.getVideoName()+"uploadKey:"+message.getUploadKey());
-        //合并分片
-        log.info("开始合并分片：{}", message.getUploadKey());
-        ChunkUploadContext chunkUploadContext = redisHashObjectUtils.getObject(message.getUploadKey(), ChunkUploadContext.class);
-        s3Util.completeMultipartUpload(chunkUploadContext.getUploadId(), chunkUploadContext.getPartETags(), chunkUploadContext.getObjectName());
-        log.info("合并分片完成：{}", message.getUploadKey());
-        log.info("开始转码：{}", message.getVideoName());
-        Video videoObject = createVideo();
+        try {
+            System.out.println("接收到视频转码消息：" + message.getVideoName()+"uploadKey:"+message.getUploadKey());
+            //合并分片
+            log.info("开始合并分片：{}", message.getUploadKey());
+            ChunkUploadContext chunkUploadContext = redisHashObjectUtils.getObject(message.getUploadKey(), ChunkUploadContext.class);
+            s3Util.completeMultipartUpload(chunkUploadContext.getUploadId(), chunkUploadContext.getPartETags(), chunkUploadContext.getObjectName());
+            log.info("合并分片完成：{}", message.getUploadKey());
+            log.info("开始转码：{}", message.getVideoName());
+            //Video videoObject = createVideo();
+            minIOUtil.downloadFileToLocal(message.getVideoName(), videoProperties.getMp4FilePath()+message.getVideoName());
+            Path input = Paths.get( videoProperties.getMp4FilePath()+message.getVideoName());
+            Path output = Paths.get(videoProperties.getDashFilePath()+message.getVideoName()+"/");
+            // 执行转换（4秒分片）
+            ffmpegUtils.convertMp4ToDash(input, output, 4);
+        } catch (Exception e) {
+            log.error("视频转码失败：{}", message.getVideoName(), e);
+        }
     }
 
     public Video createVideo() {
