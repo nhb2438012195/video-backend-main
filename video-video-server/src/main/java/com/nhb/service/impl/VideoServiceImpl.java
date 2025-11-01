@@ -72,7 +72,7 @@ public class VideoServiceImpl implements VideoService {
         if(Objects.isNull(initChunkUploadDTO) || Objects.isNull(initChunkUploadDTO.getTotalChunks()) || initChunkUploadDTO.getTotalChunks()<=0){
             throw new BusinessException("TotalChunks参数错误:不能为null或者小于0");
         }
-        String objectName=UUID.randomUUID().toString()+"."+initChunkUploadDTO.getFileType().split("/")[1];
+        String objectName=UUID.randomUUID()+"."+initChunkUploadDTO.getFileType().split("/")[1];
         String uploadKey = "chunkUpload."+username+"."+objectName;
         String uploadId =s3Util.initiateMultipartUpload(objectName);
         List<String> partETags = new ArrayList<>();
@@ -86,10 +86,7 @@ public class VideoServiceImpl implements VideoService {
                 .totalChunks(initChunkUploadDTO.getTotalChunks())
                 .userName(username)
                 .uploadedChunkCount(0)
-                .isUploaded(false)
                 .isPaused(false)
-                .isCanceled(false)
-                .uploadedChunkIndexes(new ArrayList<>())
                 .build();
         redisHashObjectUtils.setObject(uploadKey, chunkUploadContext,videoProperties.getTimeout(), TimeUnit.MINUTES);
         s3Util.initiateMultipartUpload(objectName);
@@ -127,24 +124,6 @@ public class VideoServiceImpl implements VideoService {
         if(chunkUploadContext ==null){
             throw new BusinessException("上传视频失败:上传会话不存在");
         }
-        if(chunkUploadContext.isCanceled()){
-            throw new BusinessException("上传视频失败:上传已取消");
-        }
-        if(chunkUploadContext.isPaused()){
-            throw new BusinessException("上传视频失败:上传已暂停");
-        }
-        if(chunkUploadContext.isUploaded()){
-            throw new BusinessException("上传视频失败:上传已完成");
-        }
-        if(!username.equals(chunkUploadContext.getUserName())){
-            throw new BusinessException("上传视频失败:用户名不匹配");
-        }
-        if(chunkIndex> chunkUploadContext.getTotalChunks()){
-            throw new BusinessException("上传视频失败:分片索引超出范围");
-        }
-        if(chunkUploadContext.getUploadedChunkIndexes().contains(chunkIndex)){
-            throw new BusinessException("上传视频失败:该分片已上传");
-        }
         return chunkUploadContext;
     }
 
@@ -152,7 +131,6 @@ public class VideoServiceImpl implements VideoService {
     public void uploadChunk(MultipartFile file, Integer chunkIndex, ChunkUploadContext chunkUploadContext) throws IOException {
         String partETag = s3Util.uploadPart(chunkUploadContext.getUploadId(), chunkIndex, file, chunkUploadContext.getObjectName());
         chunkUploadContext.getPartETags().set(chunkIndex-1, partETag);
-        chunkUploadContext.getUploadedChunkIndexes().add(chunkIndex);
         chunkUploadContext.setUploadedChunkCount(chunkUploadContext.getUploadedChunkCount()+1);
     }
 
@@ -177,6 +155,5 @@ public class VideoServiceImpl implements VideoService {
     public void saveUploadSession(String uploadKey, ChunkUploadContext chunkUploadContext) {
         redisHashObjectUtils.putField(uploadKey,"partETags", chunkUploadContext.getPartETags());
         redisHashObjectUtils.putField(uploadKey,"uploadedChunkCount", chunkUploadContext.getUploadedChunkCount());
-        redisHashObjectUtils.putField(uploadKey,"uploadedChunkIndexes", chunkUploadContext.getUploadedChunkIndexes());
     }
 }

@@ -26,13 +26,7 @@ public class ChunkUploadContext {
     private Integer totalChunks;
     //已上传分片数
     private Integer uploadedChunkCount;
-    //已上传分片的分片索引
-    private List<Integer> uploadedChunkIndexes;
-    //是否上传完毕
-    private boolean isUploaded;
     //是否暂停上传
     private boolean isPaused;
-    //是否取消上传
-    private boolean isCanceled;
 
 }
