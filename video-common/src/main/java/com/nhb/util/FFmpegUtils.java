@@ -125,7 +125,7 @@ public class FFmpegUtils {
             throw new FileNotFoundException("输入 MP4 不存在: " + inputMp4);
         }
 
-        Path optimizedMp4 = optimizeMp4ForStreaming(inputMp4);
+        Path optimizedMp4 =optimizeMp4ForStreaming(inputMp4);
         try {
             Files.createDirectories(outputDir);
             Path mpdFile = outputDir.resolve("manifest.mpd");
@@ -138,7 +138,7 @@ public class FFmpegUtils {
                     "-c", "copy",
                     "-f", "dash",
                     "-seg_duration", String.valueOf(segmentDurationSeconds),
-                    "-window_size", "10",
+                //    "-window_size", "10",
                     mpdFile.toAbsolutePath().toString()  // 注意：这里只写文件名，因为工作目录是 outputDir
             );
 

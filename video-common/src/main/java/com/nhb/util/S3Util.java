@@ -9,8 +9,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -120,6 +122,32 @@ public class S3Util {
             String eTag = response.eTag();
             log.debug("上传分片成功，uploadId: {}, part: {}, ETag: {}", uploadId, partNumber, eTag);
             return eTag;
+    }
+
+    public String uploadPart(String uploadId, int partNumber, File file, String objectName) throws IOException {
+        if (objectName == null) {
+            throw new IllegalArgumentException("无效的 uploadId: " + uploadId);
+        }
+
+        // 获取文件大小（用于指定 RequestBody 的长度）
+        long contentLength = file.length();
+
+        UploadPartRequest request = UploadPartRequest.builder()
+                .bucket(defaultBucketName)
+                .key(objectName)
+                .uploadId(uploadId)
+                .partNumber(partNumber)
+                .build();
+
+        // 使用 file.getInputStream() 作为数据源，并指定准确的 contentLength
+        UploadPartResponse response = s3Client.uploadPart(
+                request,
+                RequestBody.fromInputStream(Files.newInputStream(file.toPath()), contentLength)
+        );
+
+        String eTag = response.eTag();
+        log.debug("上传分片成功，uploadId: {}, part: {}, ETag: {}", uploadId, partNumber, eTag);
+        return eTag;
     }
     /**
      * 完成分片上传（合并所有分片）

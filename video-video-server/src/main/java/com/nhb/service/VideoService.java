@@ -2,10 +2,10 @@ package com.nhb.service;
 
 import com.nhb.DTO.InitChunkUploadDTO;
 import com.nhb.VO.InitChunkUploadVO;
-import com.nhb.entity.Video;
 import com.nhb.context.ChunkUploadContext;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 
 public interface VideoService {
@@ -22,7 +22,14 @@ public interface VideoService {
 
     void uploadChunk(MultipartFile file, Integer chunkIndex, ChunkUploadContext chunkUploadContext) throws IOException;
 
+    void uploadChunk(File file, Integer chunkIndex, ChunkUploadContext chunkUploadContext) throws IOException;
+
     void mergeChunks(ChunkUploadContext chunkUploadContext, String uploadKey);
 
     void saveUploadSession(String uploadKey, ChunkUploadContext chunkUploadContext);
+
+    String saveMultipartFile(MultipartFile file) throws IOException;
+
+
+    void commandChunksUploadService(String fileName, String uploadKey, Integer chunkIndex, String username);
 }

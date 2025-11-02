@@ -13,15 +13,19 @@ public class VideoProperties {
     //发送消息的交换机
     private String Exchange;
     //发送消息的key
-    private String RoutingKey;
+    private String transcodeRoutingKey;
     //获取视频信息超时时间
     private long timeout;
     //最大分片大小
     private long maxChunkSize;
 
-    private String Mp4FilePath;
+    private String videoTemporaryFile;
 
-    private String DashFilePath;
+    private String dashFileSaveBucket;
+
+    private String uploadRoutingKey;
+
+    private String uploadQueue;
 
 
 

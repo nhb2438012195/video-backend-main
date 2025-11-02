@@ -5,17 +5,21 @@ video :
   #视频存储桶
   bucket: public
   Exchange: video.exchange
-  RoutingKey: video.transcode
+
   #  缓存超时时间，单位分钟
   timeout: 120
   #  最大分片大小10MB
   maxChunkSize : 11485760
-  transcode:
-    queue: video.transcode.queue
-  #下载MP4文件临时文件目录
-  Mp4FilePath: E:/videoMp4/
-  #保存DASH文件的目录
-  DashFilePath: E:/videoDash/
+  #下载文件临时文件目录
+  videoTemporaryFile: E:/videoTemporaryFile/
+  # minio中 DASH文件保存的路径
+  dashFileSaveBucket: dash
+  #上传队列
+  uploadRoutingKey: video.upload
+  uploadQueue: video.upload.queue
+  #转码队列
+  transcodeRoutingKey: video.transcode
+  transcodeQueue: video.transcode.queue
 #项目配置
 
 

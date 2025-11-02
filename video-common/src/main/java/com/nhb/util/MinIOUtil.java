@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,6 +19,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -28,6 +30,52 @@ public class MinIOUtil {
 
     @Value("${minio.bucket-name}")
     private String defaultBucketName;
+    /**
+     * 上传本地目录下的所有文件到 MinIO 指定 bucket，并以该目录名作为对象前缀。
+     *
+     * @param bucketName   MinIO 的 bucket 名称
+     * @param localDirPath 本地目录路径，例如 "E:/123"
+     * @throws Exception 上传过程中可能抛出的异常
+     */
+    public void uploadDirectory(String bucketName, String localDirPath) throws Exception {
+        Path localDir = Paths.get(localDirPath);
+        if (!Files.exists(localDir) || !Files.isDirectory(localDir)) {
+            throw new IllegalArgumentException("本地路径不存在或不是一个目录: " + localDirPath);
+        }
+
+        String dirName = localDir.getFileName().toString(); // 获取最后一级目录名，如 "123"
+
+        try (Stream<Path> walk = Files.walk(localDir)) {
+            walk.filter(Files::isRegularFile)
+                    .forEach(file -> {
+                        try {
+                            // 计算相对路径，例如 localDir 是 E:/123，file 是 E:/123/a/b.txt，则 relative 是 a/b.txt
+                            Path relativePath = localDir.relativize(file);
+                            // 拼接对象名：123/a/b.txt
+                            String objectName = dirName + "/" + relativePath.toString().replace("\\", "/");
+
+                            log.info("正在上传文件: {} 到 bucket: {}, 对象名: {}", file, bucketName, objectName);
+
+                            minioClient.putObject(
+                                    PutObjectArgs.builder()
+                                            .bucket(bucketName)
+                                            .object(objectName)
+                                            .stream(Files.newInputStream(file), file.toFile().length(), -1)
+                                            .build()
+                            );
+
+                            log.info("上传成功: {}", objectName);
+                        } catch (Exception e) {
+                            log.error("上传文件失败: {}", file, e);
+                            throw new RuntimeException("上传文件失败: " + file, e);
+                        }
+                    });
+        } catch (IOException e) {
+            log.error("遍历本地目录失败: {}", localDirPath, e);
+            throw new RuntimeException("遍历本地目录失败", e);
+        }
+    }
+
     /**
      * 上传文件到 MinIO 并返回存储的对象名称
      */

@@ -5,11 +5,11 @@ import com.nhb.DAO.VideoDAO;
 import com.nhb.DAO.VideoDetailsDAO;
 import com.nhb.DTO.InitChunkUploadDTO;
 import com.nhb.VO.InitChunkUploadVO;
-import com.nhb.entity.Video;
-import com.nhb.entity.VideoDetails;
+import com.nhb.command.ChunksUploadCommand;
 import com.nhb.exception.BusinessException;
 import com.nhb.command.VideoTranscodeCommand;
 import com.nhb.properties.VideoProperties;
+import com.nhb.service.CommonService;
 import com.nhb.service.VideoService;
 import com.nhb.context.ChunkUploadContext;
 import com.nhb.util.MinIOUtil;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,8 @@ public class VideoServiceImpl implements VideoService {
     private S3Util s3Util;
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
+    @Autowired
+    private CommonService commonService;
 
 
 
@@ -116,6 +119,13 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
+    public void uploadChunk(File file, Integer chunkIndex, ChunkUploadContext chunkUploadContext) throws IOException {
+        String partETag = s3Util.uploadPart(chunkUploadContext.getUploadId(), chunkIndex, file, chunkUploadContext.getObjectName());
+        chunkUploadContext.getPartETags().set(chunkIndex-1, partETag);
+        chunkUploadContext.setUploadedChunkCount(chunkUploadContext.getUploadedChunkCount()+1);
+    }
+
+    @Override
     public void mergeChunks(ChunkUploadContext chunkUploadContext, String uploadKey) {
         //s3Util.completeMultipartUpload(chunkUploadSession.getUploadId(), chunkUploadSession.getPartETags(), chunkUploadSession.getObjectName());
         VideoTranscodeCommand videoTranscodeCommand = VideoTranscodeCommand.builder()
@@ -125,7 +135,7 @@ public class VideoServiceImpl implements VideoService {
                 .build();
         rabbitMQUtil.sendJsonMessage(
                 videoProperties.getExchange(),  // 1. 发送到哪个 Exchange
-                videoProperties.getRoutingKey(),           // 2. 使用什么 Routing Key
+                videoProperties.getTranscodeRoutingKey(),           // 2. 使用什么 Routing Key
                 videoTranscodeCommand                        // 3. 要发送的消息对象
         );
     }
@@ -135,4 +145,30 @@ public class VideoServiceImpl implements VideoService {
         redisHashObjectUtils.putField(uploadKey,"partETags", chunkUploadContext.getPartETags());
         redisHashObjectUtils.putField(uploadKey,"uploadedChunkCount", chunkUploadContext.getUploadedChunkCount());
     }
+
+    @Override
+    public String saveMultipartFile(MultipartFile file) throws IOException {
+        String objectName = UUID.randomUUID().toString();
+        commonService.saveMultipartFile(file, videoProperties.getVideoTemporaryFile(), objectName);
+        return objectName;
+    }
+
+
+    @Override
+    public void commandChunksUploadService(String fileName, String uploadKey, Integer chunkIndex, String username) {
+
+        ChunksUploadCommand chunksUploadCommand = ChunksUploadCommand.builder()
+                .fileName(fileName)
+                .uploadKey(uploadKey)
+                .chunkIndex(chunkIndex)
+                .username(username)
+                .build();
+        rabbitMQUtil.sendJsonMessage(
+                videoProperties.getExchange(),  // 1. 发送到哪个 Exchange
+                videoProperties.getUploadRoutingKey(),           // 2. 使用什么 Routing Key
+                chunksUploadCommand                        // 3. 要发送的消息对象
+        );
+    }
+
+
 }
